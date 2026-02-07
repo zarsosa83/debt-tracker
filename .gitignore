@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+venv/
+.venv/
+env/
+
+# Database
+*.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Env
+.env
+.env.local
+
+# Old Kivy files
+appui/
+buildozer.spec
+main.py
