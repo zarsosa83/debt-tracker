@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: '/lending-tracker/',
+  base: '/debt-tracker/',
   plugins: [
     react(),
     VitePWA({
@@ -17,8 +17,8 @@ export default defineConfig({
         background_color: '#f8fafc',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/lending-tracker/',
-        start_url: '/lending-tracker/',
+        scope: '/debt-tracker/',
+        start_url: '/debt-tracker/',
         icons: [
           {
             src: 'icon.svg',
