@@ -26,18 +26,20 @@ function generateId() {
 }
 
 // Schedule calculation (ported from Python backend/logic.py)
-function scheduleRows(startDate, principal, rateMonthly, months, payments) {
+// interest_type: "none", "flat", "percentage"
+function scheduleRows(startDate, principal, rateMonthly, months, payments, interestType) {
   let p = Math.round(principal * 100) / 100;
   let ibal = 0.0;
   const rows = [];
   let cursor = new Date(startDate);
   const processedPayments = new Set();
+  const iType = interestType || (rateMonthly > 0 ? 'percentage' : 'none');
 
   // Normalize & sort payments by date
   const pays = [...payments].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // Add start row for 0% interest loans
-  if (rateMonthly === 0) {
+  // Add start row for no-interest loans
+  if (iType === 'none') {
     rows.push({
       date: formatShortDate(cursor),
       label: 'Start',
@@ -50,12 +52,17 @@ function scheduleRows(startDate, principal, rateMonthly, months, payments) {
   }
 
   for (let monthNum = 0; monthNum < months; monthNum++) {
-    // Accrue monthly interest
-    const interest = rateMonthly > 0 ? Math.round(p * rateMonthly * 100) / 100 : 0.0;
+    // Accrue monthly interest based on type
+    let interest = 0.0;
+    if (iType === 'flat') {
+      interest = Math.round(rateMonthly * 100) / 100; // fixed amount
+    } else if (iType === 'percentage') {
+      interest = Math.round(p * rateMonthly * 100) / 100; // % of principal
+    }
     ibal = Math.round((ibal + interest) * 100) / 100;
 
     // Only add interest row if there's interest to track
-    if (rateMonthly > 0) {
+    if (iType !== 'none') {
       rows.push({
         date: formatShortDate(cursor),
         label: 'Monthly Interest',
@@ -182,6 +189,15 @@ export async function createLoan(loan) {
   return newLoan;
 }
 
+export async function updateLoan(id, updates) {
+  const loans = getLoans();
+  const idx = loans.findIndex(l => l.id === id);
+  if (idx === -1) throw new Error('Loan not found');
+  loans[idx] = { ...loans[idx], ...updates };
+  saveLoans(loans);
+  return loans[idx];
+}
+
 export async function deleteLoan(id) {
   let loans = getLoans();
   loans = loans.filter(l => l.id !== id);
@@ -214,7 +230,8 @@ export async function fetchLoanSchedule(id) {
       date: p.pay_date,
       amount: p.amount,
       apply_to: p.apply_to
-    }))
+    })),
+    loan.interest_type
   );
 
   return { loan, rows };

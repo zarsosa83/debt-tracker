@@ -311,6 +311,12 @@ body {
   color: white;
 }
 
+.btn-secondary {
+  background: var(--primary);
+  color: white;
+  opacity: 0.85;
+}
+
 .btn-outline {
   background: transparent;
   border: 1px solid var(--border);
